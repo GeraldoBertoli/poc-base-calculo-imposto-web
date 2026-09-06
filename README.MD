@@ -1,5 +1,3 @@
-Claro 😎. Eu faria um README com cara de projeto oficial, mas ainda deixando claro que é uma PoC.
-
 ````markdown
 # 🇧🇷 DeRE — Base de Cálculo
 
