@@ -1,0 +1,85 @@
+import { CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { ApiService } from '../../core/api.service';
+import { VariableMapping, TaxCode } from '../../core/models';
+import { PageComponent } from '../../shared/page.component';
+
+@Component({
+  selector: 'app-variaveis',
+  standalone: true,
+  imports: [CommonModule, FormsModule, PageComponent],
+  template: `<app-page title="Variáveis de mapeamento" subtitle="Transforme os dados cadastrados em variáveis disponíveis para o contexto SpEL." eyebrow="CADASTROS">
+    <div class="card form-card">
+      <div class="field"><label>Nome da variável</label><input [(ngModel)]="draft.nomeVariavel" placeholder="Ex.: receitaTributavel"></div>
+      <div class="field"><label>Operação</label><input [(ngModel)]="draft.operacao" placeholder="Ex.: SUM"></div>
+      <div class="field"><label>Código de tributação</label><select [(ngModel)]="draft.codTrib">
+        <option value="">Selecione</option>
+        @for(t of taxes; track t.codigo){<option [value]="t.codigo">{{t.codigo}} — {{t.descricao}}</option>}
+      </select></div>
+      <button class="btn primary" (click)="save()">{{editing?'Atualizar':'Cadastrar'}}</button>
+      <button class="btn ghost" (click)="reset()">Limpar</button>
+    </div>
+    <div class="card">
+      <table><thead><tr><th>Variável</th><th>Operação</th><th>Cód. tributação</th><th>Ações</th></tr></thead>
+      <tbody>@for(x of items; track x.id){<tr><td><code>{{x.nomeVariavel}}</code></td><td>{{x.operacao}}</td><td>{{x.codTrib || '—'}}</td><td class="actions"><button class="link" (click)="edit(x)">Editar</button><button class="link danger" (click)="remove(x)">Excluir</button></td></tr>}@empty{<tr><td colspan="4" class="empty">Nenhum registro.</td></tr>}</tbody></table>
+    </div>
+  </app-page>`
+})
+export class VariaveisComponent {
+  api = inject(ApiService);
+  items: VariableMapping[] = [];
+  taxes: TaxCode[] = [];
+  draft: VariableMapping = { nomeVariavel: '', operacao: '', codTrib: '' };
+  editing = false;
+
+  constructor() {
+    this.api.taxCodes.list().subscribe(x => this.taxes = x._embedded?.['codigosTributacao'] ?? []);
+    this.load();
+  }
+
+  load() {
+    this.api.mappings.list().subscribe(x => {
+      const items = x._embedded?.['variaveisMapeamento'] ?? [];
+      if (!items.length) { this.items = []; return; }
+      forkJoin(items.map(item => item.id
+        ? this.api.association<TaxCode>('variaveis-mapeamento', item.id, 'codTrib').pipe(
+            map(t => ({ ...item, codTrib: t.codigo })),
+            catchError(() => of(item))
+          )
+        : of(item)
+      )).subscribe(enriched => this.items = enriched);
+    });
+  }
+
+  save() {
+    const payload: VariableMapping = {
+      nomeVariavel: this.draft.nomeVariavel,
+      operacao: this.draft.operacao,
+      codTrib: ''
+    };
+
+    const request = this.editing && this.draft.id
+      ? this.api.mappings.update(this.draft.id, payload).pipe(map(() => this.draft.id!))
+      : this.api.mappings.create(payload).pipe(map((saved: VariableMapping) => saved.id!));
+
+    request.subscribe(id => {
+      const association = this.draft.codTrib
+        ? this.api.setAssociation('variaveis-mapeamento', id, 'codTrib', 'codigos-tributacao', this.draft.codTrib)
+        : this.api.clearAssociation('variaveis-mapeamento', id, 'codTrib');
+
+      association.subscribe({
+        next: () => { this.reset(); this.load(); },
+        error: () => { this.reset(); this.load(); }
+      });
+    });
+  }
+
+  edit(x: VariableMapping) { this.draft = { ...x }; this.editing = true; }
+  reset() { this.draft = { nomeVariavel: '', operacao: '', codTrib: '' }; this.editing = false; }
+  remove(x: VariableMapping) {
+    if (x.id && confirm(`Excluir ${x.nomeVariavel}?`)) this.api.mappings.remove(x.id).subscribe(() => this.load());
+  }
+}
