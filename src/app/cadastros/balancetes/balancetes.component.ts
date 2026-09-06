@@ -11,23 +11,7 @@ import { PageComponent } from '../../shared/page.component';
   selector: 'app-balancetes',
   standalone: true,
   imports: [CommonModule, FormsModule, PageComponent],
-  template: `<app-page title="Balancetes" subtitle="Cadastre as contas e saldos que alimentam os cálculos." eyebrow="CADASTROS">
-    <div class="card form-card">
-      <div class="field"><label>Conta</label><input [(ngModel)]="draft.conta" placeholder="Ex.: 3.01.01"></div>
-      <div class="field"><label>Saldo</label><input type="number" [(ngModel)]="draft.saldo"></div>
-      <div class="field"><label>Código de tributação</label><select [(ngModel)]="draft.codTrib">
-        <option value="">Não classificado</option>
-        @for(t of taxes; track t.codigo){<option [value]="t.codigo">{{t.codigo}} — {{t.descricao}}</option>}
-      </select></div>
-      <button class="btn primary" (click)="save()">{{editing?'Atualizar':'Cadastrar'}}</button>
-      <button class="btn ghost" (click)="reset()">Limpar</button>
-    </div>
-    <div class="card">
-      <div class="table-head"><h2>Contas</h2><input class="search" [(ngModel)]="filter" placeholder="Pesquisar conta"></div>
-      <table><thead><tr><th>Conta</th><th>Saldo</th><th>Cód. tributação</th><th>Ações</th></tr></thead>
-      <tbody>@for(x of filtered(); track x.id){<tr><td><b>{{x.conta}}</b></td><td>{{x.saldo | number:'1.2-2'}}</td><td>{{x.codTrib || '—'}}</td><td class="actions"><button class="link" (click)="edit(x)">Editar</button><button class="link danger" (click)="remove(x)">Excluir</button></td></tr>}@empty{<tr><td colspan="4" class="empty">Nenhum registro.</td></tr>}</tbody></table>
-    </div>
-  </app-page>`
+  templateUrl: './balancetes.component.html' 
 })
 export class BalancetesComponent {
   api = inject(ApiService);

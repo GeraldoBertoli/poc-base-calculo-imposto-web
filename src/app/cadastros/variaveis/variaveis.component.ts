@@ -11,22 +11,7 @@ import { PageComponent } from '../../shared/page.component';
   selector: 'app-variaveis',
   standalone: true,
   imports: [CommonModule, FormsModule, PageComponent],
-  template: `<app-page title="Variáveis de mapeamento" subtitle="Transforme os dados cadastrados em variáveis disponíveis para o contexto SpEL." eyebrow="CADASTROS">
-    <div class="card form-card">
-      <div class="field"><label>Nome da variável</label><input [(ngModel)]="draft.nomeVariavel" placeholder="Ex.: receitaTributavel"></div>
-      <div class="field"><label>Operação</label><input [(ngModel)]="draft.operacao" placeholder="Ex.: SUM"></div>
-      <div class="field"><label>Código de tributação</label><select [(ngModel)]="draft.codTrib">
-        <option value="">Selecione</option>
-        @for(t of taxes; track t.codigo){<option [value]="t.codigo">{{t.codigo}} — {{t.descricao}}</option>}
-      </select></div>
-      <button class="btn primary" (click)="save()">{{editing?'Atualizar':'Cadastrar'}}</button>
-      <button class="btn ghost" (click)="reset()">Limpar</button>
-    </div>
-    <div class="card">
-      <table><thead><tr><th>Variável</th><th>Operação</th><th>Cód. tributação</th><th>Ações</th></tr></thead>
-      <tbody>@for(x of items; track x.id){<tr><td><code>{{x.nomeVariavel}}</code></td><td>{{x.operacao}}</td><td>{{x.codTrib || '—'}}</td><td class="actions"><button class="link" (click)="edit(x)">Editar</button><button class="link danger" (click)="remove(x)">Excluir</button></td></tr>}@empty{<tr><td colspan="4" class="empty">Nenhum registro.</td></tr>}</tbody></table>
-    </div>
-  </app-page>`
+  templateUrl: './variaveis.component.html' 
 })
 export class VariaveisComponent {
   api = inject(ApiService);

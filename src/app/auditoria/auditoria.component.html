@@ -1,0 +1,31 @@
+<app-page title="Auditoria de cálculos" subtitle="Histórico retornado pela PoC de execução das bases de cálculo."
+    eyebrow="EXECUÇÃO">
+    <div class="card execute">
+        <div class="field"><label>Código da base</label><input [(ngModel)]="codBc" placeholder="Ex.: BC001"></div>
+        <button class="btn primary" (click)="calculate()" [disabled]="!codBc">▶ Calcular agora</button><span
+            class="muted">A API executa <code>POST /api/calculo/&#123;codBc&#125;</code>.</span>
+    </div>
+    <div class="card">
+        <div class="table-head">
+            <h2>Execuções</h2><button class="btn" (click)="load()">Atualizar</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Base</th>
+                    <th>Resultado</th>
+                    <th>Entrada</th>
+                </tr>
+            </thead>
+            <tbody>@for(x of items;track x.id){<tr>
+                    <td>{{x.dtProcessamento | date:'dd/MM/yyyy HH:mm:ss'}}</td>
+                    <td><b>{{x.codBc}}</b></td>
+                    <td class="number">{{x.valorResultado | number:'1.2-4'}}</td>
+                    <td><code>{{x.jsonVariaveisEntrada}}</code></td>
+                </tr>}@empty{<tr>
+                    <td colspan="4" class="empty">Nenhuma execução registrada.</td>
+                </tr>}</tbody>
+        </table>
+    </div>
+</app-page>

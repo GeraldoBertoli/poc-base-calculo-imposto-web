@@ -1,0 +1,55 @@
+<app-page title="Fórmulas" subtitle="Defina a expressão SpEL que calcula cada base da Tabela 12."
+    eyebrow="CADASTRO / TABELA 12">
+    <div class="builder card">
+        <div class="builder-main">
+            <div class="field"><label>Código da base de cálculo</label><input [(ngModel)]="draft.codBc"
+                    placeholder="Ex.: BC001"></div>
+            <div class="field"><label>Expressão SpEL</label><textarea [(ngModel)]="draft.expressaoSpel" rows="7"
+                    placeholder="Ex.: receitaTributavel - deducoes"></textarea></div>
+            <div class="toolbar"><button class="btn primary" (click)="save()">{{draft.id?'Atualizar':'Cadastrar fórmula'}}</button>
+                <button class="btn" (click)="calculate()" [disabled]="!draft.codBc">▶
+                    Calcular</button><button class="btn ghost" (click)="newFormula()">Limpar</button></div>
+            <div class="tips"><b>Exemplos de
+                    expressão</b><code>receitaTributavel - deducoes</code><code>(receita * aliquota) / 100</code><code>saldoConta + valorGlobal</code>
+            </div>
+        </div>
+        <aside class="builder-side">
+            <h3>Variáveis disponíveis</h3>
+            <p class="muted">Use os nomes cadastrados como variáveis do contexto da expressão.</p>@for(v of mappings;
+            track v.id){<button class="token"
+                (click)="insert(v.nomeVariavel)">{{v.nomeVariavel}}<small>{{v.operacao}}</small></button>} @for(g of
+            globals; track g.name){<button class="token"
+                (click)="insert(g.name)">{{g.name}}<small>{{g.value}}</small></button>} @if(!mappings.length &&
+            !globals.length){<span class="muted">Cadastre variáveis para aparecerem aqui.</span>}
+        </aside>
+    </div>
+    <div class="card">
+        <div class="table-head">
+            <h2>Fórmulas cadastradas</h2><input class="search" [(ngModel)]="filter" placeholder="Filtrar por código">
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Expressão</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>@for(f of filtered(); track f.id){<tr>
+                    <td><b>{{f.codBc}}</b></td>
+                    <td><code>{{f.expressaoSpel}}</code></td>
+                    <td class="actions"><button class="link" (click)="edit(f)">Editar</button><button
+                            class="link danger" (click)="remove(f)">Excluir</button><button class="link"
+                            (click)="run(f)">Calcular</button></td>
+                </tr>} @empty {<tr>
+                    <td colspan="3" class="empty">Nenhuma fórmula cadastrada.</td>
+                </tr>}</tbody>
+        </table>
+    </div>
+    @if(result){<div class="card result-card">
+        <div><span class="eyebrow">RESULTADO</span>
+            <h2>{{result.codBc}}</h2>
+            <p>{{result.jsonVariaveisEntrada}}</p>
+        </div><strong>{{result.valorResultado | number:'1.2-4'}}</strong>
+    </div>}
+</app-page>
